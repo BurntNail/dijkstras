@@ -40,6 +40,27 @@ pub fn v2(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
         }
     }
 
+    let mut s = Vec::with_capacity(6);
+    for target in ['a', 'b', 'c', 'd', 'e', 'f'] {
+        let mut u = target;
+        
+        if prev.contains_key(&u) || u == SOURCE {
+            loop {
+                s.insert(0, u);
+                
+                if prev.contains_key(&u) {
+                    u = prev[&u];
+                } else {
+                    break;
+                }
+            }
+        }
+        
+        black_box(&s);
+        s.clear();
+    }
+
+
     return (dist, prev);
 }
 
@@ -86,6 +107,27 @@ pub fn v1(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
         }
     }
 
+    let mut s = Vec::with_capacity(6);
+    for target in ['a', 'b', 'c', 'd', 'e', 'f'] {
+        let mut u = target;
+        
+        if prev.contains_key(&u) || u == SOURCE {
+            loop {
+                s.insert(0, u);
+                
+                if prev.contains_key(&u) {
+                    u = prev[&u];
+                } else {
+                    break;
+                }
+            }
+        }
+        
+        black_box(&s);
+        s.clear();
+    }
+
+
     return (dist, prev);
 }
 
@@ -107,24 +149,6 @@ fn main() {
         let a = v2(&edges);
         black_box(a);
 
-            // for target in ['a', 'b', 'c', 'd', 'e', 'f'] {
-    //     let mut s = vec![];
-    //     let mut u = target;
-
-    //     if prev.contains_key(&u) || u == SOURCE {
-    //         loop {
-    //             s.insert(0, u);
-
-    //             if prev.contains_key(&u) {
-    //                 u = prev[&u];
-    //             } else {
-    //                 break;
-    //             }
-    //         }
-    //     }
-
-    //     // println!("To get to {target:?} from {SOURCE:?}, you must go: {s:?}");
-    // }
     }
     println!("Took {:?}.", start.elapsed() / RUNS);
 }
