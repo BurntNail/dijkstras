@@ -1,12 +1,56 @@
-use std::{
-    collections::{HashMap, HashSet},
-    hint::black_box,
-    time::Instant,
-};
+mod bitvec;
 
-type N = u32;
-type ID = char;
-const SOURCE: ID = 'a';
+use bitvec::ExpandableBitVec;
+use std::collections::{HashMap, HashSet};
+
+pub type N = u32;
+pub type ID = char;
+pub const SOURCE: ID = 'a';
+const SOURCE_: usize = SOURCE as usize;
+
+pub fn v3(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
+    let len = hm_edges.len();
+
+    let mut edges = vec![vec![]; len];
+    for (vert, vert_edges) in hm_edges.clone() {
+        let size = vert_edges.keys().max().copied().unwrap_or(SOURCE) as usize - SOURCE_ + 1;
+        let mut inner = vec![N::MAX; size];
+        for (inner_vert, cost) in vert_edges {
+            inner[(inner_vert as usize) - SOURCE_] = cost;
+        }
+        edges[(vert as usize) - SOURCE_] = inner;
+    } 
+
+    let mut dist = vec![N::MAX; len];
+    dist[0] = 0;
+    let mut prev = vec![None; len];
+
+
+
+    let mut visited = ExpandableBitVec::new(len);
+
+    loop {
+        let Some((u, initial_cost)) = dist.iter().enumerate().filter(|(index, _cost)| {
+            !visited.index(*index)
+        }).min_by_key(|(_index, cost)| **cost) else {break};
+        let initial_cost = *initial_cost;
+        visited.set(u, true);
+
+        for (neighbour, cost) in (&edges[u]).into_iter().enumerate().filter(|(v, cost)| !visited.index(*v) && **cost != N::MAX) {
+            let alt = initial_cost + cost;
+            if alt < dist[neighbour] {
+                dist[neighbour] = alt;
+                prev[neighbour] = Some(u);
+            }
+        }
+    }
+
+    return ({
+        dist.into_iter().enumerate().map(|(index, cost)| ((index + SOURCE_) as u8 as char, cost)).collect()
+    }, {
+        prev.into_iter().enumerate().filter(|(_a, b)| b.is_some()).map(|(a, b)| ((a + SOURCE_) as u8 as char, (b.unwrap() + SOURCE_) as u8 as char)).collect()
+    });
+}
 
 pub fn v2(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
     let len = edges.len();
@@ -39,27 +83,6 @@ pub fn v2(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
             }
         }
     }
-
-    let mut s = Vec::with_capacity(6);
-    for target in ['a', 'b', 'c', 'd', 'e', 'f'] {
-        let mut u = target;
-        
-        if prev.contains_key(&u) || u == SOURCE {
-            loop {
-                s.insert(0, u);
-                
-                if prev.contains_key(&u) {
-                    u = prev[&u];
-                } else {
-                    break;
-                }
-            }
-        }
-        
-        black_box(&s);
-        s.clear();
-    }
-
 
     return (dist, prev);
 }
@@ -107,48 +130,5 @@ pub fn v1(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
         }
     }
 
-    let mut s = Vec::with_capacity(6);
-    for target in ['a', 'b', 'c', 'd', 'e', 'f'] {
-        let mut u = target;
-        
-        if prev.contains_key(&u) || u == SOURCE {
-            loop {
-                s.insert(0, u);
-                
-                if prev.contains_key(&u) {
-                    u = prev[&u];
-                } else {
-                    break;
-                }
-            }
-        }
-        
-        black_box(&s);
-        s.clear();
-    }
-
-
     return (dist, prev);
-}
-
-fn main() {
-    let edges: HashMap<ID, HashMap<ID, N>> = [
-        ('a', [('b', 4), ('c', 4)].into()),
-        ('b', [('c', 1), ('d', 7)].into()),
-        ('c', [('e', 3)].into()),
-        ('d', [('f', 5)].into()),
-        ('e', [('d', 1), ('f', 8)].into()),
-        ('f', HashMap::new()),
-    ]
-    .into();
-
-    const RUNS: u32 = 10_000;
-
-    let start = Instant::now();
-    for _ in 0..RUNS {
-        let a = v2(&edges);
-        black_box(a);
-
-    }
-    println!("Took {:?}.", start.elapsed() / RUNS);
 }
