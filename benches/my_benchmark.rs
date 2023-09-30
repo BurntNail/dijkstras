@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use dijkstras::*;
+use dijkstras::{*, bstkl::dijkstra};
 use std::collections::HashMap;
 
 fn verify(prev: HashMap<ID, ID>) {
@@ -28,7 +28,7 @@ fn verify(prev: HashMap<ID, ID>) {
             }
         }
 
-        if &s != EXPECTED[i] {
+        if s != EXPECTED[i] {
             panic!("Got {s:?}, Expected {:?}", EXPECTED[i]);
         }
 
@@ -48,37 +48,16 @@ fn criterion_benchmark(c: &mut Criterion) {
     ]
     .into();
 
-    c.bench_function("v1", |b| {
-        b.iter(|| {
-            let (dist, prev) = v1(&edges);
-            black_box(dist);
-            verify(prev);
-        })
-    });
-    c.bench_function("v2", |b| {
-        b.iter(|| {
-            let (dist, prev) = v2(&edges);
-            black_box(dist);
-            verify(prev);
-        })
-    });
-    c.bench_function("v3", |b| {
-        b.iter(|| {
-            let (dist, prev) = v3(&edges);
-            black_box(dist);
-            verify(prev);
-        })
-    });
-    c.bench_function("v3_comptimehelp", |b| {
+    c.bench_function("burntnail", |b| {
         b.iter(|| {
             let (dist, prev) = v3_cheating(&edges);
             black_box(dist);
             verify(prev);
         })
     });
-    c.bench_function("v3_array_comptimehelp", |b| {
+    c.bench_function("bstkl", |b| {
         b.iter(|| {
-            let (dist, prev) = v3_cheating_normal_array(&edges);
+            let (dist, prev) = dijkstra(&edges);
             black_box(dist);
             verify(prev);
         })

@@ -1,6 +1,8 @@
 use arrayvec::ArrayVec;
 use std::collections::{HashMap, HashSet};
 
+pub mod bstkl;
+
 pub type N = u32;
 pub type ID = char;
 pub const SOURCE: ID = 'a';
@@ -33,8 +35,8 @@ pub fn v3_cheating_normal_array(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (Hash
         let initial_cost = *initial_cost;
         visited |= 1 << u;
 
-        for (neighbour, cost) in (&edges[u])
-            .into_iter()
+        for (neighbour, cost) in edges[u]
+            .iter()
             .enumerate()
             .filter_map(|(v, cost)| cost.map(|cost| (v, cost)))
             .filter(|(v, _cost)| !visited_contains(visited, *v))
@@ -47,7 +49,7 @@ pub fn v3_cheating_normal_array(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (Hash
         }
     }
 
-    return (
+    (
         {
             dist.into_iter()
                 .enumerate()
@@ -66,7 +68,7 @@ pub fn v3_cheating_normal_array(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (Hash
                 })
                 .collect()
         },
-    );
+    )
 }
 
 
@@ -116,7 +118,7 @@ pub fn v3_cheating(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, H
         }
     }
 
-    return (
+    (
         {
             dist.into_iter()
                 .enumerate()
@@ -135,7 +137,7 @@ pub fn v3_cheating(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, H
                 })
                 .collect()
         },
-    );
+    )
 }
 
 pub fn v3(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
@@ -164,8 +166,8 @@ pub fn v3(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID
         let initial_cost = *initial_cost;
         visited |= 1 << u;
 
-        for (neighbour, cost) in (&edges[u])
-            .into_iter()
+        for (neighbour, cost) in edges[u]
+            .iter()
             .enumerate()
             .filter_map(|(v, cost)| cost.map(|cost| (v, cost)))
             .filter(|(v, _cost)| !visited_contains(visited, *v))
@@ -178,7 +180,7 @@ pub fn v3(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID
         }
     }
 
-    return (
+    (
         {
             dist.into_iter()
                 .enumerate()
@@ -197,7 +199,7 @@ pub fn v3(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID
                 })
                 .collect()
         },
-    );
+    )
 }
 
 pub fn v2(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
@@ -220,8 +222,8 @@ pub fn v2(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
         };
         visited.insert(u);
 
-        for (neighbour, cost) in (&edges[&u])
-            .into_iter()
+        for (neighbour, cost) in edges[&u]
+            .iter()
             .filter(|(v, _)| !visited.contains(*v))
         {
             let alt = initial_cost + cost;
@@ -232,7 +234,7 @@ pub fn v2(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
         }
     }
 
-    return (dist, prev);
+    (dist, prev)
 }
 
 pub fn v1(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
@@ -256,15 +258,14 @@ pub fn v1(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
             }
         }
 
-        return working;
+        working
     };
 
-    loop {
-        if let Some(u) = grab_min(current_search.clone(), dist.clone()) {
+    while let Some(u) = grab_min(current_search.clone(), dist.clone()) {
             current_search.remove(&u);
 
-            for (neighbour, cost) in (&edges[&u])
-                .into_iter()
+            for (neighbour, cost) in edges[&u]
+                .iter()
                 .filter(|(v, _)| current_search.contains(*v))
             {
                 let alt = dist[&u] + cost;
@@ -273,10 +274,7 @@ pub fn v1(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
                     prev.insert(*neighbour, u);
                 }
             }
-        } else {
-            break;
-        }
     }
 
-    return (dist, prev);
+    (dist, prev)
 }
