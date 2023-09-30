@@ -79,40 +79,53 @@ pub fn v3_cheating_normal_array(
 
 pub fn v3_cheating(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
     const LEN: usize = 6;
+    assert_eq!(LEN, hm_edges.len());
+    assert!(LEN < (usize::BITS - 1) as usize);
 
+    // Create a fixed-size array to store the edges of the graph
     let mut edges = ArrayVec::<_, LEN>::new();
     (0..LEN).for_each(|_| edges.push(ArrayVec::<_, LEN>::new()));
+
+    // Create fixed-size arrays to store the shortest distances and previous nodes for each node in the graph
     let mut dist = ArrayVec::<N, LEN>::new();
     let mut prev = ArrayVec::<Option<usize>, LEN>::new();
 
+    // Initialize the arrays with the data from the hashmap
     for (vert, vert_edges) in hm_edges.clone().into_iter() {
+        // Create a new array to store the edges for this node
         let inner = &mut edges[(vert as usize) - SOURCE_];
         (0..LEN).for_each(|_| inner.push(None));
 
+        // Add the edges to the array
         for (inner_vert, cost) in vert_edges {
             inner[(inner_vert as usize) - SOURCE_] = Some(cost);
         }
 
+        // Initialize the shortest distance and previous node arrays
         dist.push(N::MAX);
         prev.push(None);
     }
     dist[0] = 0;
 
+    // Keep track of which nodes have been visited
     let mut visited = 0;
     let visited_contains = |visited: usize, index: usize| visited & (1 << index) > 0;
 
     loop {
+        // Find the unvisited node with the shortest distance from the source
         let Some((u, initial_cost)) = dist
             .iter()
             .enumerate()
             .filter(|(index, _cost)| !visited_contains(visited, *index))
             .min_by_key(|(_index, cost)| **cost)
         else {
+            // If all nodes have been visited, we're done
             break;
         };
         let initial_cost = *initial_cost;
         visited |= 1 << u;
 
+        // Update the distances and previous nodes for the neighbors of the current node
         for (neighbour, cost) in (&edges[u])
             .into_iter()
             .enumerate()
@@ -127,6 +140,7 @@ pub fn v3_cheating(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, H
         }
     }
 
+    // Convert the fixed-size arrays to hashmaps and return them
     (
         {
             dist.into_iter()
