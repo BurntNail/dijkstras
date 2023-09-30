@@ -8,7 +8,9 @@ pub type ID = char;
 pub const SOURCE: ID = 'a';
 const SOURCE_: usize = SOURCE as usize;
 
-pub fn v3_cheating_normal_array(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
+pub fn v3_cheating_normal_array(
+    hm_edges: &HashMap<ID, HashMap<ID, N>>,
+) -> (HashMap<ID, N>, HashMap<ID, ID>) {
     const LEN: usize = 6;
 
     let mut edges = [[None; LEN]; LEN];
@@ -24,14 +26,18 @@ pub fn v3_cheating_normal_array(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (Hash
     }
     dist[0] = 0;
 
-
     let mut visited = 0;
     let visited_contains = |visited: usize, index: usize| visited & (1 << index) > 0;
 
     loop {
-        let Some((u, initial_cost)) = dist.iter().enumerate().filter(|(index, _cost)| {
-            !visited_contains(visited, *index)
-        }).min_by_key(|(_index, cost)| **cost) else {break};
+        let Some((u, initial_cost)) = dist
+            .iter()
+            .enumerate()
+            .filter(|(index, _cost)| !visited_contains(visited, *index))
+            .min_by_key(|(_index, cost)| **cost)
+        else {
+            break;
+        };
         let initial_cost = *initial_cost;
         visited |= 1 << u;
 
@@ -71,7 +77,6 @@ pub fn v3_cheating_normal_array(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (Hash
     )
 }
 
-
 pub fn v3_cheating(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
     const LEN: usize = 6;
 
@@ -93,14 +98,18 @@ pub fn v3_cheating(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, H
     }
     dist[0] = 0;
 
-
     let mut visited = 0;
     let visited_contains = |visited: usize, index: usize| visited & (1 << index) > 0;
 
     loop {
-        let Some((u, initial_cost)) = dist.iter().enumerate().filter(|(index, _cost)| {
-            !visited_contains(visited, *index)
-        }).min_by_key(|(_index, cost)| **cost) else {break};
+        let Some((u, initial_cost)) = dist
+            .iter()
+            .enumerate()
+            .filter(|(index, _cost)| !visited_contains(visited, *index))
+            .min_by_key(|(_index, cost)| **cost)
+        else {
+            break;
+        };
         let initial_cost = *initial_cost;
         visited |= 1 << u;
 
@@ -160,9 +169,14 @@ pub fn v3(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID
     let visited_contains = |visited: usize, index: usize| visited & (1 << index) > 0;
 
     loop {
-        let Some((u, initial_cost)) = dist.iter().enumerate().filter(|(index, _cost)| {
-            !visited_contains(visited, *index)
-        }).min_by_key(|(_index, cost)| **cost) else {break};
+        let Some((u, initial_cost)) = dist
+            .iter()
+            .enumerate()
+            .filter(|(index, _cost)| !visited_contains(visited, *index))
+            .min_by_key(|(_index, cost)| **cost)
+        else {
+            break;
+        };
         let initial_cost = *initial_cost;
         visited |= 1 << u;
 
@@ -217,15 +231,17 @@ pub fn v2(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
     let mut visited = HashSet::with_capacity(len);
 
     loop {
-        let Some((u, initial_cost)) = dist.iter().filter(|(v, _)| !visited.contains(*v)).map(|(a, b)| (*a, *b)).min_by(|(_, a), (_, b)| a.cmp(b)) else {
+        let Some((u, initial_cost)) = dist
+            .iter()
+            .filter(|(v, _)| !visited.contains(*v))
+            .map(|(a, b)| (*a, *b))
+            .min_by(|(_, a), (_, b)| a.cmp(b))
+        else {
             break;
         };
         visited.insert(u);
 
-        for (neighbour, cost) in edges[&u]
-            .iter()
-            .filter(|(v, _)| !visited.contains(*v))
-        {
+        for (neighbour, cost) in edges[&u].iter().filter(|(v, _)| !visited.contains(*v)) {
             let alt = initial_cost + cost;
             if alt < dist[neighbour] {
                 dist.insert(*neighbour, alt);
@@ -262,18 +278,18 @@ pub fn v1(edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, I
     };
 
     while let Some(u) = grab_min(current_search.clone(), dist.clone()) {
-            current_search.remove(&u);
+        current_search.remove(&u);
 
-            for (neighbour, cost) in edges[&u]
-                .iter()
-                .filter(|(v, _)| current_search.contains(*v))
-            {
-                let alt = dist[&u] + cost;
-                if alt < dist[neighbour] {
-                    dist.insert(*neighbour, alt);
-                    prev.insert(*neighbour, u);
-                }
+        for (neighbour, cost) in edges[&u]
+            .iter()
+            .filter(|(v, _)| current_search.contains(*v))
+        {
+            let alt = dist[&u] + cost;
+            if alt < dist[neighbour] {
+                dist.insert(*neighbour, alt);
+                prev.insert(*neighbour, u);
             }
+        }
     }
 
     (dist, prev)
