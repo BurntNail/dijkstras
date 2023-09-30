@@ -6,6 +6,70 @@ pub type ID = char;
 pub const SOURCE: ID = 'a';
 const SOURCE_: usize = SOURCE as usize;
 
+pub fn v3_cheating_normal_array(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
+    const LEN: usize = 6;
+
+    let mut edges = [[None; LEN]; LEN];
+    let mut dist = [N::MAX; LEN];
+    let mut prev = [None; LEN];
+
+    for (vert, vert_edges) in hm_edges.clone().into_iter() {
+        let inner = &mut edges[(vert as usize) - SOURCE_];
+
+        for (inner_vert, cost) in vert_edges {
+            inner[(inner_vert as usize) - SOURCE_] = Some(cost);
+        }
+    }
+    dist[0] = 0;
+
+
+    let mut visited = 0;
+    let visited_contains = |visited: usize, index: usize| visited & (1 << index) > 0;
+
+    loop {
+        let Some((u, initial_cost)) = dist.iter().enumerate().filter(|(index, _cost)| {
+            !visited_contains(visited, *index)
+        }).min_by_key(|(_index, cost)| **cost) else {break};
+        let initial_cost = *initial_cost;
+        visited |= 1 << u;
+
+        for (neighbour, cost) in (&edges[u])
+            .into_iter()
+            .enumerate()
+            .filter_map(|(v, cost)| cost.map(|cost| (v, cost)))
+            .filter(|(v, _cost)| !visited_contains(visited, *v))
+        {
+            let alt = initial_cost + cost;
+            if alt < dist[neighbour] {
+                dist[neighbour] = alt;
+                prev[neighbour] = Some(u);
+            }
+        }
+    }
+
+    return (
+        {
+            dist.into_iter()
+                .enumerate()
+                .map(|(index, cost)| ((index + SOURCE_) as u8 as char, cost))
+                .collect()
+        },
+        {
+            prev.into_iter()
+                .enumerate()
+                .filter(|(_a, b)| b.is_some())
+                .map(|(a, b)| {
+                    (
+                        (a + SOURCE_) as u8 as char,
+                        (b.unwrap() + SOURCE_) as u8 as char,
+                    )
+                })
+                .collect()
+        },
+    );
+}
+
+
 pub fn v3_cheating(hm_edges: &HashMap<ID, HashMap<ID, N>>) -> (HashMap<ID, N>, HashMap<ID, ID>) {
     const LEN: usize = 6;
 
